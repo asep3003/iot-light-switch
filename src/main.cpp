@@ -1,151 +1,146 @@
+// D5, D6, D7
+// 3V3, GND
 #include <ESP8266WiFi.h>
 #include <ESP8266WebServer.h>
+
+ESP8266WebServer server(80);
 
 const char *ssid = "Redmi 4A";
 const char *password = "asep3003";
 
-ESP8266WebServer server(80);
+const int espLed = 2;
+const int ledPin1 = 14;
+const int ledPin2 = 12;
+const int ledPin3 = 13;
+const int ledPin5 = 5;
+const int ledPin4 = 4;
 
-const int ledPin = LED_BUILTIN;
+bool dapurLedState = false;
+bool tamuLedState = false;
+bool makanLedState = false;
+bool toiletLedState = false;
+bool halamanLedState = false;
 
-String htmlPage()
+void setDapurLed()
 {
-  String html = R"rawliteral(
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="UTF-8">
-  <title>Kontrol LED ESP8266</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      text-align: center;
-      background-color: #1e1e1e;
-      color: #f0f0f0;
-      padding-top: 50px;
-    }
-    h1 {
-      color: #00ffc3;
-    }
-    .switch {
-      position: relative;
-      display: inline-block;
-      width: 80px;
-      height: 40px;
-    }
-    .switch input {
-      display: none;
-    }
-    .slider {
-      position: absolute;
-      cursor: pointer;
-      top: 0; left: 0;
-      right: 0; bottom: 0;
-      background-color: #ccc;
-      transition: 0.4s;
-      border-radius: 34px;
-    }
-    .slider:before {
-      position: absolute;
-      content: "";
-      height: 30px;
-      width: 30px;
-      left: 5px;
-      bottom: 5px;
-      background-color: white;
-      transition: 0.4s;
-      border-radius: 50%;
-    }
-    input:checked + .slider {
-      background-color: #00ffc3;
-    }
-    input:checked + .slider:before {
-      transform: translateX(40px);
-    }
-  </style>
-</head>
-<body>
-  <h1>Kontrol LED NodeMCU 💡</h1>
-  <label class="switch">
-    <input type="checkbox" onchange="toggleLED(this)">
-    <span class="slider"></span>
-  </label>
+  dapurLedState = !dapurLedState;
+  digitalWrite(ledPin1, dapurLedState ? HIGH : LOW);
+  server.sendHeader("Access-Control-Allow-Origin", "*");
+  server.send(200, "text/plain", dapurLedState ? "ON" : "OFF");
+}
 
-  <script>
-    function toggleLED(el) {
-      if (el.checked) {
-        fetch("/led/on");
-      } else {
-        fetch("/led/off");
-      }
-    }
-  </script>
-</body>
-</html>
-)rawliteral";
-  return html;
+void setTamuLed()
+{
+  tamuLedState = !tamuLedState;
+  digitalWrite(ledPin2, tamuLedState ? HIGH : LOW);
+  server.sendHeader("Access-Control-Allow-Origin", "*");
+  server.send(200, "text/plain", tamuLedState ? "ON" : "OFF");
+}
+
+void setMakanLed()
+{
+  makanLedState = !makanLedState;
+  digitalWrite(ledPin3, makanLedState ? HIGH : LOW);
+  server.sendHeader("Access-Control-Allow-Origin", "*");
+  server.send(200, "text/plain", makanLedState ? "ON" : "OFF");
+}
+
+void setToiletLed()
+{
+  toiletLedState = !toiletLedState;
+  digitalWrite(ledPin4, toiletLedState ? HIGH : LOW);
+  server.sendHeader("Access-Control-Allow-Origin", "*");
+  server.send(200, "text/plain", toiletLedState ? "ON" : "OFF");
+}
+
+void setHalamanLed()
+{
+  halamanLedState = !halamanLedState;
+  digitalWrite(ledPin5, halamanLedState ? HIGH : LOW);
+  server.sendHeader("Access-Control-Allow-Origin", "*");
+  server.send(200, "text/plain", halamanLedState ? "ON" : "OFF");
+}
+
+void getDapurLed()
+{
+  server.sendHeader("Access-Control-Allow-Origin", "*");
+  server.send(200, "text/plain", dapurLedState ? "ON" : "OFF");
+}
+
+void getTamuLed()
+{
+  server.sendHeader("Access-Control-Allow-Origin", "*");
+  server.send(200, "text/plain", tamuLedState ? "ON" : "OFF");
+}
+
+void getMakanLed()
+{
+  server.sendHeader("Access-Control-Allow-Origin", "*");
+  server.send(200, "text/plain", makanLedState ? "ON" : "OFF");
+}
+
+void getToiletLed()
+{
+  server.sendHeader("Access-Control-Allow-Origin", "*");
+  server.send(200, "text/plain", toiletLedState ? "ON" : "OFF");
+}
+
+void getHalamanLed()
+{
+  server.sendHeader("Access-Control-Allow-Origin", "*");
+  server.send(200, "text/plain", halamanLedState ? "ON" : "OFF");
 }
 
 void setup()
 {
-  pinMode(ledPin, OUTPUT);
-  digitalWrite(ledPin, HIGH); // LED mati (karena LED_BUILTIN aktif low)
-
   Serial.begin(115200);
+
+  pinMode(espLed, OUTPUT);
+  pinMode(ledPin1, OUTPUT);
+  pinMode(ledPin2, OUTPUT);
+  pinMode(ledPin3, OUTPUT);
+  pinMode(ledPin4, OUTPUT);
+  pinMode(ledPin5, OUTPUT);
+
+  digitalWrite(ledPin1, LOW);
+  digitalWrite(ledPin2, LOW);
+  digitalWrite(ledPin3, LOW);
+  digitalWrite(ledPin4, LOW);
+  digitalWrite(ledPin5, LOW);
+
   WiFi.begin(ssid, password);
-  Serial.print("Menghubungkan ke WiFi");
+  Serial.print("Connecting to wifi Redmi 4A...");
 
   while (WiFi.status() != WL_CONNECTED)
   {
-    delay(500);
+    digitalWrite(espLed, HIGH);
+    delay(1000);
     Serial.print(".");
   }
 
-  Serial.println();
-  Serial.print("Terhubung! IP address: ");
+  digitalWrite(espLed, LOW);
+  Serial.println("");
+  Serial.println("Connected to wifi");
   Serial.println(WiFi.localIP());
 
-  // Routes
-  server.on("/", []()
-            { server.send(200, "text/html", htmlPage()); });
+  server.on("/dapur", HTTP_GET, getDapurLed);
+  server.on("/tamu", HTTP_GET, getTamuLed);
+  server.on("/makan", HTTP_GET, getMakanLed);
+  server.on("/toilet", HTTP_GET, getToiletLed);
+  server.on("/halaman", HTTP_GET, getHalamanLed);
 
-  server.on("/led/on", []()
-            {
-    digitalWrite(ledPin, LOW);  // LED ON (aktif low)
-    server.send(200, "text/plain", "LED ON"); });
-
-  server.on("/led/off", []()
-            {
-    digitalWrite(ledPin, HIGH);  // LED OFF
-    server.send(200, "text/plain", "LED OFF"); });
+  server.on("/dapur", HTTP_POST, setDapurLed);
+  server.on("/tamu", HTTP_POST, setTamuLed);
+  server.on("/makan", HTTP_POST, setMakanLed);
+  server.on("/toilet", HTTP_POST, setToiletLed);
+  server.on("/halaman", HTTP_POST, setHalamanLed);
 
   server.begin();
-  Serial.println("Web server aktif.");
+  Serial.println("Server started...");
 }
 
 void loop()
 {
+  // put your main code here, to run repeatedly:
   server.handleClient();
 }
-
-// D4, D5, D19
-// 3V3, GND
-
-// const int ledPin1 = 4;
-// const int ledPin2 = 5;
-// const int ledPin3 = 19;
-
-// void setup()
-// {
-//   pinMode(ledPin1, OUTPUT);
-//   pinMode(ledPin2, OUTPUT);
-//   pinMode(ledPin3, OUTPUT);
-
-//   digitalWrite(ledPin1, HIGH);
-//   digitalWrite(ledPin2, LOW);
-//   digitalWrite(ledPin3, LOW);
-// }
-
-// void loop()
-// {
-// }
