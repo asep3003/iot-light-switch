@@ -1,4 +1,4 @@
-const endpoint = "http://192.168.100.31";
+const endpoint = "https://7bb1-2001-448a-2082-80f8-34f4-ad6b-b86a-6157.ngrok-free.app";
 
 function getDapurLed() {
   fetch(endpoint + "/dapur", {
